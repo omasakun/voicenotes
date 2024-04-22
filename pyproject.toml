@@ -1,0 +1,28 @@
+[project]
+name = "voicenotes"
+version = "0.1.0"
+
+requires-python = "~=3.10.11"
+
+[tool.pdm.dev-dependencies]
+dev = [
+  "autoflake~=2.2",
+  "gprof2dot~=2022.7",
+  "ipykernel~=6.29",
+  "isort~=5.13",
+  "yapf~=0.40",
+]
+
+[tool.pdm.build]
+package-dir = "."
+
+[tool.yapf]
+based_on_style = "yapf"
+blank_line_before_nested_class_or_def = false
+blank_lines_around_top_level_definition = 1
+column_limit = 160
+join_multiple_lines = true
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
