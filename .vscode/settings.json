@@ -26,7 +26,13 @@
   "typescript.preferences.importModuleSpecifier": "non-relative",
   "python.analysis.diagnosticMode": "workspace",
   "python.analysis.typeCheckingMode": "standard",
+  "python.analysis.exclude": [],
   "files.exclude": {},
   "files.watcherExclude": {},
-  "python.analysis.exclude": []
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "tailwindCSS.experimental.configFile": {
+    "app/tailwind.config.mjs": "app/src/**"
+  }
 }
