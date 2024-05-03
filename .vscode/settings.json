@@ -8,6 +8,9 @@
   "[ignore]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
+  "[kotlin]": {
+    "editor.defaultFormatter": "fwcd.kotlin"
+  },
   "[properties]": {
     "editor.defaultFormatter": "foxundermoon.shell-format"
   },
@@ -22,6 +25,10 @@
   },
   "[toml]": {
     "editor.defaultFormatter": "tamasfe.even-better-toml"
+  },
+  "[xml]": {
+    "editor.defaultFormatter": "redhat.vscode-xml",
+    "files.trimFinalNewlines": false
   },
   "typescript.preferences.importModuleSpecifier": "non-relative",
   "python.analysis.diagnosticMode": "workspace",
