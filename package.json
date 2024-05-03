@@ -2,13 +2,15 @@
   "private": true,
   "scripts": {
     "prepare": "husky",
+    "format": "prettier --write .",
     "ncu": "pnpm update --recursive --interactive",
     "ncu:latest": "pnpm update --recursive --interactive --latest"
   },
   "devDependencies": {
     "husky": "^9.0.7",
     "lint-staged": "^15.2.0",
-    "prettier": "^3.2.4"
+    "prettier": "^3.2.4",
+    "prettier-plugin-tailwindcss": "^0.5.14"
   },
   "lint-staged": {
     "*": []

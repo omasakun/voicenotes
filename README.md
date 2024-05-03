@@ -29,6 +29,11 @@ pnpm install
 # これで準備完了です！
 source .venv/bin/activate
 python -m voicenotes
+
+# Tauri Guide
+pnpm tauri dev
+pnpm tauri android init
+pnpm tauri android dev
 ```
 
 PDM の代わりに `requirements.txt` を使って依存関係をインストールすることもできます。

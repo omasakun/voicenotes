@@ -3,8 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-  :root,
-  .light {
+  :root {
     /* Eva Light */
 
     --background: 222 33% 94%;
@@ -30,6 +29,15 @@
 
     --destructive: 10 87% 22%;
     --destructive-foreground: 10 87% 82%;
+
+    --info: 214 48% 73%;
+    --info-foreground: 214 48% 13%;
+    --success: 108 34% 66%;
+    --success-foreground: 108 43% 7%;
+    --warning: 31 40% 69%;
+    --warning-foreground: 31 40% 9%;
+    --error: 3 40% 69%;
+    --error-foreground: 3 40% 9%;
 
     --border: 222 23% 89%;
     --input: 222 23% 86%;
@@ -64,6 +72,15 @@
 
     --destructive: 4 88% 45%;
     --destructive-foreground: 0 0% 100%;
+
+    --info: 203 51% 24%;
+    --info-foreground: 203 51% 84%;
+    --success: 123 40% 23%;
+    --success-foreground: 123 40% 83%;
+    --warning: 49 51% 24%;
+    --warning-foreground: 49 51% 84%;
+    --error: 2 40% 23%;
+    --error-foreground: 2 40% 83%;
 
     --border: 220 3% 23%;
     --input: 220 3% 26%;
@@ -109,5 +126,8 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-feature-settings:
+      'rlig' 1,
+      'calt' 1;
   }
 }
