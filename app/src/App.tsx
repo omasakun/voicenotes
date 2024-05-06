@@ -1,55 +1,233 @@
 import { Button } from '@/components/ui/button'
-import { Callout, CalloutContent, CalloutTitle } from '@/components/ui/callout'
-import { Card } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { invoke } from '@tauri-apps/api/core'
-import { createSignal } from 'solid-js'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuGroupLabel,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Progress } from '@/components/ui/progress'
+import { Resizable, ResizableHandle, ResizablePanel } from '@/components/ui/resizable'
+import {
+  Edit3Icon,
+  EllipsisIcon,
+  FolderIcon,
+  FolderOpenIcon,
+  MenuIcon,
+  OrbitIcon,
+  PlayIcon,
+  PlusIcon,
+} from 'lucide-solid'
+import { For } from 'solid-js'
 
 export function App() {
-  const [greetMsg, setGreetMsg] = createSignal('')
-  const [name, setName] = createSignal('')
-
-  async function greet() {
-    setGreetMsg(await invoke('greet', { name: name() }))
-  }
-
   return (
-    <div class='my-12 flex flex-col gap-8'>
-      <Card class='mx-auto flex w-80 flex-col gap-4 p-6'>
-        <form
-          class='flex gap-2'
-          onSubmit={(e) => {
-            e.preventDefault()
-            greet()
-          }}>
-          <Input onChange={(e) => setName(e.currentTarget.value)} placeholder='Enter a name...' />
-          <Button type='submit'>Greet</Button>
-        </form>
+    <div class='flex h-screen flex-col'>
+      <Header />
+      <div class='h-0 flex-1'>
+        <WelcomePage />
+      </div>
+      <Resizable class='h-0 flex-1'>
+        <ResizablePanel initialSize={0.25} class='w-0 min-w-48'>
+          <FilesPane />
+        </ResizablePanel>
+        <ResizableHandle />
+        <ResizablePanel initialSize={0.75} class='w-0'>
+          <PlayerPane />
+        </ResizablePanel>
+      </Resizable>
+    </div>
+  )
+}
 
-        <p>{greetMsg()}</p>
-      </Card>
-      <div class='mx-auto flex w-80 flex-col gap-4'>
-        <Callout>
-          <CalloutTitle>Default</CalloutTitle>
-          <CalloutContent>Lorem ipsum dolor sit amet consectetur</CalloutContent>
-        </Callout>
-        <Callout variant={'success'}>
-          <CalloutTitle>Success</CalloutTitle>
-          <CalloutContent>Lorem ipsum dolor sit amet consectetur</CalloutContent>
-        </Callout>
-        <Callout variant={'warning'}>
-          <CalloutTitle>Warning</CalloutTitle>
-          <CalloutContent>Lorem ipsum dolor sit amet consectetur</CalloutContent>
-        </Callout>
-        <Callout variant={'error'}>
-          <CalloutTitle>Error</CalloutTitle>
-          <CalloutContent>Lorem ipsum dolor sit amet consectetur</CalloutContent>
-        </Callout>
-        <Callout variant={'destructive'}>
-          <CalloutTitle>Destructive</CalloutTitle>
-          <CalloutContent>Lorem ipsum dolor sit amet consectetur</CalloutContent>
-        </Callout>
+function Header() {
+  return (
+    <div class='bg-card text-card-foreground flex items-center border-b p-1'>
+      <AppMenu />
+      <div class='mx-1 translate-y-[-1px]'>{'/'}</div>
+      <CollectionDropdown />
+      <div class='flex-1' />
+      <Status />
+    </div>
+  )
+}
+
+function AppMenu() {
+  return (
+    <DropdownMenu placement='bottom-start' gutter={8}>
+      <DropdownMenuTrigger
+        as={(props) => <Button variant='ghost' class='flex items-center px-2' {...props} />}>
+        <MenuIcon class='mr-2 size-4' />
+        <h1 class='text-xs font-bold uppercase tracking-wide'>Voicenotes</h1>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem>Command Palette</DropdownMenuItem>
+        <DropdownMenuItem>Quit</DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuLabel class='text-xs'>Version: 0.0.0</DropdownMenuLabel>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+function CollectionDropdown() {
+  return (
+    <DropdownMenu gutter={8}>
+      <DropdownMenuTrigger
+        as={(props) => <Button variant='ghost' class='flex items-center px-2' {...props} />}>
+        Welcome Page
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem>
+          <FolderOpenIcon class='mr-2 size-4' />
+          Collection 1
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <FolderIcon class='mr-2 size-4' />
+          Collection 2
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <FolderIcon class='mr-2 size-4' />
+          Collection 3
+        </DropdownMenuItem>
+        <DropdownMenuItem>
+          <PlusIcon class='mr-2 size-4' />
+          New Collection
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>
+          <Edit3Icon class='mr-2 size-4' />
+          Edit Collections
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+function Status() {
+  return (
+    <Popover placement='bottom-end' gutter={8}>
+      <PopoverTrigger
+        as={(props) => <Button variant='ghost' class='flex items-center' {...props} />}>
+        <OrbitIcon class='mr-2 size-4' />
+        <div>Processing</div>
+      </PopoverTrigger>
+      <PopoverContent>
+        <h2 class='mb-2 text-sm font-bold'>Current Status</h2>
+        <p class='text-sm'>Transcribing audio...</p>
+        <div class='mt-2 flex justify-end'>
+          <Button size='sm'>Pause</Button>
+        </div>
+      </PopoverContent>
+    </Popover>
+  )
+}
+
+function WelcomePage() {
+  return (
+    <div class='flex h-full items-center justify-center'>
+      <div class='text-center'>
+        <h1 class='text-4xl font-bold'>Welcome to Voicenotes</h1>
+        <p class='mt-4 text-lg'>Start by creating a new audio collection</p>
+        <Button class='mt-8'>Create Collection</Button>
       </div>
     </div>
+  )
+}
+
+function FilesPane() {
+  return (
+    <div class='h-full overflow-auto'>
+      {/*
+      <div class='bg-background sticky top-0 flex items-center justify-center border-b py-1'>
+        <h2 class='text-sm'>Audios</h2>
+      </div>
+       */}
+      <ul class='[&_li:last-child]:border-0'>
+        <For each={new Array(100).fill(0)}>
+          {(_, i) => (
+            <li class='border-b'>
+              <button class='hover:bg-accent hover:text-accent-foreground w-full px-4 py-3 text-start transition-colors'>
+                <div class='mb-1 truncate font-medium'>{`File ${i() + 1}`}</div>
+                <div class='flex flex-wrap justify-between text-sm'>
+                  <div class='mr-2 text-xs font-medium tabular-nums'>{`1:00:43`}</div>
+                  <div class='text-xs font-medium tabular-nums'>{`2024-01-01 00:00`}</div>
+                </div>
+              </button>
+            </li>
+          )}
+        </For>
+      </ul>
+    </div>
+  )
+}
+
+function PlayerPane() {
+  // select-text を親要素に指定することで、余白部分からでもテキスト選択ができるようになる
+  // プレイヤーコントロール部分では改めて select-none を指定している
+  return (
+    <div class='h-full select-text overflow-auto'>
+      <div class='mx-auto max-w-5xl'>
+        <h2 class='m-8 truncate text-2xl font-medium'>File 1</h2>
+        <div class='m-8'>{'Contents '.repeat(1000)}</div>
+      </div>
+      <div class='sticky bottom-8 m-8'>
+        <div class='bg-background mx-auto max-w-96 select-none rounded-xl border p-2 shadow-md'>
+          <PlayerControls />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PlayerControls() {
+  return (
+    <div class='flex items-center justify-between'>
+      <Button variant='ghost' size='icon-xs' class='mr-2'>
+        <PlayIcon class='size-4' />
+      </Button>
+      <div class='mr-2 text-xs font-medium tabular-nums'>1:00:43</div>
+      <Progress value={50} class='mr-2 flex-1' />
+      <div class='mr-2 text-xs font-medium tabular-nums'>1:00:43</div>
+      <DropdownMenu placement='top' gutter={12}>
+        <DropdownMenuTrigger as={(props) => <Button variant='ghost' size='icon-xs' {...props} />}>
+          <EllipsisIcon class='size-4' />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <SpeedDropdownGroup />
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  )
+}
+
+function SpeedDropdownGroup() {
+  return (
+    <DropdownMenuGroup>
+      <DropdownMenuGroupLabel>Speed</DropdownMenuGroupLabel>
+      <DropdownMenuRadioGroup>
+        <DropdownMenuRadioItem value='x0.5' class='tabular-nums'>
+          x 0.5
+        </DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value='x1.0' class='tabular-nums'>
+          x 1.0
+        </DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value='x1.2' class='tabular-nums'>
+          x 1.2
+        </DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value='x1.5' class='tabular-nums'>
+          x 1.5
+        </DropdownMenuRadioItem>
+        <DropdownMenuRadioItem value='x2.0' class='tabular-nums'>
+          x 2.0
+        </DropdownMenuRadioItem>
+      </DropdownMenuRadioGroup>
+    </DropdownMenuGroup>
   )
 }

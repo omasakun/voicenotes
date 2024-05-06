@@ -41,5 +41,9 @@
   },
   "tailwindCSS.experimental.configFile": {
     "app/tailwind.config.mjs": "app/src/**"
+  },
+  "emmet.includeLanguages": {
+    "javascriptreact": "html",
+    "typescriptreact": "html"
   }
 }
