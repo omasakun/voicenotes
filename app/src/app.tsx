@@ -1,3 +1,9 @@
+import {
+  CREATE_COLLECTION_DIALOG,
+  EDIT_COLLECTIONS_DIALOG,
+  openDialog,
+} from '@/components/dialogs/context'
+import { Dialogs } from '@/components/dialogs/dialogs'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -42,6 +48,7 @@ export function App() {
           <PlayerPane />
         </ResizablePanel>
       </Resizable>
+      <Dialogs />
     </div>
   )
 }
@@ -96,12 +103,12 @@ function CollectionDropdown() {
           <FolderIcon class='mr-2 size-4' />
           Collection 3
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => openDialog(CREATE_COLLECTION_DIALOG, {})}>
           <PlusIcon class='mr-2 size-4' />
           New Collection
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => openDialog(EDIT_COLLECTIONS_DIALOG, {})}>
           <Edit3Icon class='mr-2 size-4' />
           Edit Collections
         </DropdownMenuItem>
@@ -131,11 +138,13 @@ function Status() {
 
 function WelcomePage() {
   return (
-    <div class='flex h-full items-center justify-center'>
-      <div class='text-center'>
+    <div class='flex min-h-full items-center justify-center'>
+      <div class='mx-2 text-center'>
         <h1 class='text-4xl font-bold'>Welcome to Voicenotes</h1>
         <p class='mt-4 text-lg'>Start by creating a new audio collection</p>
-        <Button class='mt-8'>Create Collection</Button>
+        <Button class='mt-8' onClick={() => openDialog(CREATE_COLLECTION_DIALOG, {})}>
+          Create Collection
+        </Button>
       </div>
     </div>
   )
