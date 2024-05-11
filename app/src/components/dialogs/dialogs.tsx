@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { cn, never, run } from '@/lib/utils'
+import { cn, never, randomUUID, run } from '@/lib/utils'
 import {
   ComponentProps,
   For,
@@ -29,7 +29,10 @@ import {
 } from 'solid-js'
 
 import { Textarea } from '@/components/ui/textarea'
+import { getCollections, setCollections } from '@/lib/api1'
+import { setCurrentPage } from '@/lib/context'
 import { Dialog as DialogPrimitive } from '@kobalte/core'
+import { path } from '@tauri-apps/api'
 import { open as openFileDialog } from '@tauri-apps/plugin-dialog'
 
 const DialogContext = createContext({ remove: () => {} })
@@ -72,6 +75,7 @@ function CreateCollectionDialog() {
   const [open, setOpen] = createSignal(true)
 
   const [error, setError] = createSignal('')
+  const [processing, setProcessing] = createSignal(false)
   const nameId = createUniqueId()
   const folderId = createUniqueId()
   let nameInput!: HTMLInputElement
@@ -118,6 +122,7 @@ function CreateCollectionDialog() {
         <DialogFooter class='flex items-center'>
           <ErrorText class='mr-2 text-right'>{error()}</ErrorText>
           <Button
+            disabled={processing()}
             onClick={() => {
               const name = nameInput.value
               const folder = folderInput.value
@@ -125,7 +130,18 @@ function CreateCollectionDialog() {
                 setError('Please fill in all fields')
                 return
               }
-              setOpen(false)
+
+              setError('')
+              setProcessing(true)
+              void run(async () => {
+                const collections = await getCollections()
+                const uuid = randomUUID()
+                const glob = await path.join(folder, '**', '*')
+                collections.push({ uuid, name, globs: [glob] })
+                await setCollections(collections)
+                setCurrentPage({ type: 'collection', uuid })
+                setOpen(false)
+              })
             }}>
             Create
           </Button>

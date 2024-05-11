@@ -20,3 +20,7 @@ export function never(_: never): never {
 export function run<T>(fn: () => T): T {
   return fn()
 }
+
+export function randomUUID() {
+  return crypto.randomUUID()
+}

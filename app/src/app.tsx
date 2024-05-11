@@ -20,6 +20,10 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Progress } from '@/components/ui/progress'
 import { Resizable, ResizableHandle, ResizablePanel } from '@/components/ui/resizable'
+import { AudioCollection } from '@/lib/api1'
+import { useCollections } from '@/lib/api2'
+import { CurrentPage, currentPage, setCurrentPage } from '@/lib/context'
+import { never } from '@/lib/utils'
 import {
   Edit3Icon,
   EllipsisIcon,
@@ -36,21 +40,32 @@ export function App() {
   return (
     <div class='flex h-screen flex-col'>
       <Header />
-      <div class='h-0 flex-1'>
-        <WelcomePage />
-      </div>
-      <Resizable class='h-0 flex-1'>
-        <ResizablePanel initialSize={0.25} class='w-0 min-w-48'>
-          <FilesPane />
-        </ResizablePanel>
-        <ResizableHandle />
-        <ResizablePanel initialSize={0.75} class='w-0'>
-          <PlayerPane />
-        </ResizablePanel>
-      </Resizable>
+      {mainContainer()}
       <Dialogs />
     </div>
   )
+}
+
+function mainContainer() {
+  const page = currentPage()
+  switch (page.type) {
+    case 'welcome':
+      return <WelcomePage />
+    case 'collection':
+      return (
+        <Resizable class='h-0 flex-1'>
+          <ResizablePanel initialSize={0.25} class='w-0 min-w-48'>
+            <FilesPane />
+          </ResizablePanel>
+          <ResizableHandle />
+          <ResizablePanel initialSize={0.75} class='w-0'>
+            <PlayerPane />
+          </ResizablePanel>
+        </Resizable>
+      )
+    default:
+      never(page)
+  }
 }
 
 function Header() {
@@ -74,7 +89,10 @@ function AppMenu() {
         <h1 class='text-xs font-bold uppercase tracking-wide'>Voicenotes</h1>
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem>Command Palette</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => setCurrentPage({ type: 'welcome' })}>
+          Welcome
+        </DropdownMenuItem>
+        <DropdownMenuItem>Commands</DropdownMenuItem>
         <DropdownMenuItem>Quit</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuLabel class='text-xs'>Version: 0.0.0</DropdownMenuLabel>
@@ -84,25 +102,45 @@ function AppMenu() {
 }
 
 function CollectionDropdown() {
+  const collections = useCollections()
+
+  const isSelected = (collection: AudioCollection) => {
+    const page = currentPage()
+    return page.type === 'collection' && page.uuid === collection.uuid
+  }
+  const pageName = (page: CurrentPage) => {
+    switch (page.type) {
+      case 'welcome':
+        return 'Welcome Page'
+      case 'collection':
+        return collections().find((c) => c.uuid === page.uuid)?.name ?? 'Collection'
+      default:
+        never(page)
+    }
+  }
+
   return (
     <DropdownMenu gutter={8}>
       <DropdownMenuTrigger
-        as={(props) => <Button variant='ghost' class='flex items-center px-2' {...props} />}>
-        Welcome Page
+        as={(props) => (
+          <Button variant='ghost' class='flex min-w-24 justify-start px-2' {...props} />
+        )}>
+        {pageName(currentPage())}
       </DropdownMenuTrigger>
       <DropdownMenuContent>
-        <DropdownMenuItem>
-          <FolderOpenIcon class='mr-2 size-4' />
-          Collection 1
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <FolderIcon class='mr-2 size-4' />
-          Collection 2
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <FolderIcon class='mr-2 size-4' />
-          Collection 3
-        </DropdownMenuItem>
+        <For each={collections()}>
+          {(collection) => (
+            <DropdownMenuItem
+              onSelect={() => setCurrentPage({ type: 'collection', uuid: collection.uuid })}>
+              {isSelected(collection) ? (
+                <FolderOpenIcon class='mr-2 size-4' />
+              ) : (
+                <FolderIcon class='mr-2 size-4' />
+              )}
+              <div>{collection.name}</div>
+            </DropdownMenuItem>
+          )}
+        </For>
         <DropdownMenuItem onSelect={() => openDialog(CREATE_COLLECTION_DIALOG, {})}>
           <PlusIcon class='mr-2 size-4' />
           New Collection
@@ -138,7 +176,7 @@ function Status() {
 
 function WelcomePage() {
   return (
-    <div class='flex min-h-full items-center justify-center'>
+    <div class='flex flex-1 items-center justify-center'>
       <div class='mx-2 text-center'>
         <h1 class='text-4xl font-bold'>Welcome to Voicenotes</h1>
         <p class='mt-4 text-lg'>Start by creating a new audio collection</p>
