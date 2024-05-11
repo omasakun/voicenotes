@@ -15,18 +15,22 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { never } from '@/lib/utils'
+import { cn, never, run } from '@/lib/utils'
 import {
+  ComponentProps,
   For,
+  Show,
   createContext,
   createEffect,
   createSignal,
   createUniqueId,
+  splitProps,
   useContext,
 } from 'solid-js'
 
 import { Textarea } from '@/components/ui/textarea'
 import { Dialog as DialogPrimitive } from '@kobalte/core'
+import { open as openFileDialog } from '@tauri-apps/plugin-dialog'
 
 const DialogContext = createContext({ remove: () => {} })
 
@@ -66,8 +70,13 @@ function renderDialog(data: DialogData) {
 
 function CreateCollectionDialog() {
   const [open, setOpen] = createSignal(true)
+
+  const [error, setError] = createSignal('')
   const nameId = createUniqueId()
   const folderId = createUniqueId()
+  let nameInput!: HTMLInputElement
+  let folderInput!: HTMLInputElement
+
   return (
     <SmartDialog open={open()} onOpenChange={(open) => setOpen(open)}>
       <DialogContent>
@@ -83,18 +92,39 @@ function CreateCollectionDialog() {
             <Label for={nameId} class='text-right'>
               Name
             </Label>
-            <Input id={nameId} class='col-span-3' />
+            <Input id={nameId} class='col-span-3' ref={nameInput} />
           </div>
           <div class='grid grid-cols-4 items-center gap-4'>
             <Label for={folderId} class='text-right'>
               Folder
             </Label>
-            <Input id={folderId} class='col-span-3' />
+            <div class='col-span-3 flex gap-2'>
+              <Input id={folderId} class='flex-1' ref={folderInput} />
+              <Button
+                variant='outline'
+                class='flex-shrink-0'
+                onClick={() => {
+                  void run(async () => {
+                    const dialog = await openFileDialog({ directory: true })
+                    if (dialog === null) return
+                    folderInput.value = dialog
+                  })
+                }}>
+                Browse
+              </Button>
+            </div>
           </div>
         </div>
-        <DialogFooter>
+        <DialogFooter class='flex items-center'>
+          <ErrorText class='mr-2 text-right'>{error()}</ErrorText>
           <Button
             onClick={() => {
+              const name = nameInput.value
+              const folder = folderInput.value
+              if (!name || !folder) {
+                setError('Please fill in all fields')
+                return
+              }
               setOpen(false)
             }}>
             Create
@@ -102,6 +132,19 @@ function CreateCollectionDialog() {
         </DialogFooter>
       </DialogContent>
     </SmartDialog>
+  )
+}
+
+/** Show an error message if message is not empty */
+function ErrorText(props: ComponentProps<'div'>) {
+  const [, rest] = splitProps(props, ['class'])
+  return (
+    <Show when={props.children}>
+      <div
+        class={cn('text-error2-foreground animate-in fade-in font-medium', props.class)}
+        {...rest}
+      />
+    </Show>
   )
 }
 
@@ -119,7 +162,7 @@ function EditCollectionsDialog() {
             losing the transcription.
           </DialogDescription>
         </DialogHeader>
-        <Textarea id={textId} class='py-4 font-mono' />
+        <Textarea id={textId} class='whitespace-nowrap py-4 font-mono' />
         <DialogFooter>
           <Button
             variant='outline'

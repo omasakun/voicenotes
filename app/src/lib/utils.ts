@@ -16,3 +16,7 @@ export function assert(condition: boolean, message: string): asserts condition {
 export function never(_: never): never {
   throw new Error('unreachable')
 }
+
+export function run<T>(fn: () => T): T {
+  return fn()
+}

@@ -16,7 +16,7 @@ const DialogPortal: Component<DialogPrimitive.DialogPortalProps> = (props) => {
   const [, rest] = splitProps(props, ["children"])
   return (
     <DialogPrimitive.Portal {...rest}>
-      <div class="fixed inset-0 z-50 flex items-start justify-center sm:items-center">
+      <div class="fixed inset-0 z-50 flex justify-center items-center">
         {props.children}
       </div>
     </DialogPrimitive.Portal>
@@ -43,7 +43,7 @@ const DialogContent: Component<DialogPrimitive.DialogContentProps> = (props) => 
       <DialogOverlay />
       <DialogPrimitive.Content
         class={cn(
-          "fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-background p-6 shadow-lg duration-200 data-[expanded]:animate-in data-[closed]:animate-out data-[closed]:fade-out-0 data-[expanded]:fade-in-0 data-[closed]:zoom-out-95 data-[expanded]:zoom-in-95 data-[closed]:slide-out-to-left-1/2 data-[closed]:slide-out-to-top-[48%] data-[expanded]:slide-in-from-left-1/2 data-[expanded]:slide-in-from-top-[48%] sm:rounded-lg",
+          "fixed left-1/2 top-1/2 z-50 grid w-full max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4 border bg-background p-6 shadow-lg duration-200 data-[expanded]:animate-in data-[closed]:animate-out data-[closed]:fade-out-0 data-[expanded]:fade-in-0 data-[closed]:zoom-out-95 data-[expanded]:zoom-in-95 data-[closed]:slide-out-to-left-1/2 data-[closed]:slide-out-to-top-[48%] data-[expanded]:slide-in-from-left-1/2 data-[expanded]:slide-in-from-top-[48%] rounded-lg",
           props.class
         )}
         {...rest}
@@ -73,7 +73,7 @@ const DialogContent: Component<DialogPrimitive.DialogContentProps> = (props) => 
 const DialogHeader: Component<ComponentProps<"div">> = (props) => {
   const [, rest] = splitProps(props, ["class"])
   return (
-    <div class={cn("flex flex-col space-y-1.5 text-center sm:text-left", props.class)} {...rest} />
+    <div class={cn("flex flex-col space-y-1.5 text-left", props.class)} {...rest} />
   )
 }
 
@@ -81,7 +81,7 @@ const DialogFooter: Component<ComponentProps<"div">> = (props) => {
   const [, rest] = splitProps(props, ["class"])
   return (
     <div
-      class={cn("flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2", props.class)}
+      class={cn("flex flex-row justify-end space-x-2", props.class)}
       {...rest}
     />
   )
@@ -108,11 +108,6 @@ const DialogDescription: Component<DialogPrimitive.DialogDescriptionProps> = (pr
 }
 
 export {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogFooter,
-  DialogTitle,
-  DialogDescription
+  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger
 }
+

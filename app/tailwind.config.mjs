@@ -45,6 +45,9 @@ export default {
           DEFAULT: 'hsl(var(--error))',
           foreground: 'hsl(var(--error-foreground))',
         },
+        error2: {
+          foreground: 'hsl(var(--error2-foreground))',
+        },
         muted: {
           DEFAULT: 'hsl(var(--muted))',
           foreground: 'hsl(var(--muted-foreground))',

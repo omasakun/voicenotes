@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  :root,
+  .light {
     /* Eva Light */
 
     --background: 222 33% 94%;
@@ -38,6 +39,9 @@
     --warning-foreground: 31 40% 9%;
     --error: 3 40% 69%;
     --error-foreground: 3 40% 9%;
+
+    /* 背景無しで表示する場合の色 */
+    --error2-foreground: 0 84% 40%;
 
     --border: 222 23% 89%;
     --input: 222 23% 86%;
@@ -82,6 +86,9 @@
     --error: 2 40% 23%;
     --error-foreground: 2 40% 83%;
 
+    /* 背景無しで表示する場合の色 */
+    --error2-foreground: 0 84% 70%;
+
     --border: 220 3% 23%;
     --input: 220 3% 26%;
     --ring: 225 35% 70%;
@@ -113,6 +120,18 @@
 
     --destructive: 7 82% 38%;
     --destructive-foreground: 7 82% 98%;
+
+    --info: 214 48% 73%;
+    --info-foreground: 214 48% 13%;
+    --success: 108 34% 66%;
+    --success-foreground: 108 43% 7%;
+    --warning: 31 40% 69%;
+    --warning-foreground: 31 40% 9%;
+    --error: 3 40% 69%;
+    --error-foreground: 3 40% 9%;
+
+    /* 背景無しで表示する場合の色 */
+    --error2-foreground: 0 84% 40%;
 
     --border: 40 80% 91%;
     --input: 40 80% 88%;
