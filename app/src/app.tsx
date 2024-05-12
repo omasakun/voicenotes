@@ -24,6 +24,7 @@ import { AudioCollection } from '@/lib/api1'
 import { useCollections } from '@/lib/api2'
 import { CurrentPage, currentPage, setCurrentPage } from '@/lib/context'
 import { never } from '@/lib/utils'
+import { exit } from '@tauri-apps/plugin-process'
 import {
   Edit3Icon,
   EllipsisIcon,
@@ -94,7 +95,7 @@ function AppMenu() {
           Welcome
         </DropdownMenuItem>
         <DropdownMenuItem>Commands</DropdownMenuItem>
-        <DropdownMenuItem>Quit</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => exit()}>Quit</DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuLabel class='text-xs'>Version: 0.0.0</DropdownMenuLabel>
       </DropdownMenuContent>
@@ -113,7 +114,7 @@ function CollectionDropdown() {
     if (!page) return ''
     switch (page.type) {
       case 'welcome':
-        return 'Welcome Page'
+        return 'Welcome'
       case 'collection':
         return collections().find((c) => c.uuid === page.uuid)?.name ?? 'Collection'
       default:

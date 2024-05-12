@@ -4,16 +4,18 @@
   "windows": ["main"],
   "platforms": ["linux", "macOS", "windows"],
   "permissions": [
-    "path:default",
-    "event:default",
-    "window:default",
     "app:default",
-    "resources:default",
+    "event:default",
     "menu:default",
+    "path:default",
+    "process:default",
+    "resources:default",
     "tray:default",
     "window:allow-set-title",
+    "window:default",
 
+    "dialog:allow-message",
     "dialog:allow-open",
-    "dialog:allow-message"
+    "process:allow-exit"
   ]
 }
