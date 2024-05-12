@@ -31,3 +31,11 @@ export function listenCollections(callback: (collections: AudioCollection[]) => 
     callback(e.payload as AudioCollection[])
   })
 }
+
+export function getCurrentPage(): Promise<string | undefined> {
+  return invoke('get_current_page')
+}
+
+export function setCurrentPage(page: string | undefined): Promise<void> {
+  return invoke('set_current_page', { page })
+}

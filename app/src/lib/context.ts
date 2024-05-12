@@ -1,4 +1,5 @@
-import { createSignal } from 'solid-js'
+import { getCurrentPage, setCurrentPage as persistCurrentPage } from '@/lib/api1'
+import { createEffect, createSignal } from 'solid-js'
 
 export type CurrentPage =
   | {
@@ -9,4 +10,7 @@ export type CurrentPage =
       uuid: string
     }
 
-export const [currentPage, setCurrentPage] = createSignal<CurrentPage>({ type: 'welcome' })
+// TODO: バージョンアップなどでページの構造が変わって正しくないページ名になった場合、強制的に welcome にするべき
+export const [currentPage, setCurrentPage] = createSignal<CurrentPage>()
+getCurrentPage().then((page) => setCurrentPage(page ? JSON.parse(page) : { type: 'welcome' }))
+createEffect(() => persistCurrentPage(JSON.stringify(currentPage())))
