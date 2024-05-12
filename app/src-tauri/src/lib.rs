@@ -7,6 +7,8 @@ use futures_signals::map_ref;
 use futures_signals::signal::Mutable;
 use futures_signals::signal::Signal;
 use futures_signals::signal::SignalExt;
+use futures_signals::signal_map::MutableBTreeMap;
+use futures_signals::signal_vec::SignalVecExt;
 use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
 use tauri::Runtime;
@@ -29,12 +31,24 @@ struct AudioCollection {
   globs: Vec<String>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-struct PersistentState {
-  current_page: Option<serde_json::Value>,
-  collections: Vec<AudioCollection>,
+// state that will be persisted to disk
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+struct AppState {
+  current_page: Mutable<Option<serde_json::Value>>,
+  collections: Mutable<Vec<AudioCollection>>,
+  entries: MutableBTreeMap<String, Vec<AudioEntry>>,
+  // NOTE: do not forget to add new fields to the `watch` method
 }
-impl PersistentState {
+
+impl AppState {
+  fn watch(&self) -> impl Signal<Item = ()> {
+    map_ref! {
+      let _ = self.current_page.signal_ref(|_| ()),
+      let _ = self.collections.signal_ref(|_| ()),
+      let _ = self.entries.entries_cloned().to_signal_cloned(), // TODO: is this correct?
+      => {}
+    }
+  }
   fn save(&self, path: PathBuf) {
     fs::create_dir_all(path.parent().unwrap()).unwrap();
     fs::write(path, serde_json::to_string_pretty(self).unwrap()).unwrap();
@@ -42,34 +56,6 @@ impl PersistentState {
   fn load(path: PathBuf) -> Option<Self> {
     let json = fs::read_to_string(path).ok()?; // file may not exist
     serde_json::from_str(&json).unwrap() // TODO: handle invalid json
-  }
-}
-
-#[derive(Debug, Default)]
-struct AppState {
-  current_page: Mutable<Option<serde_json::Value>>,
-  collections: Mutable<Vec<AudioCollection>>,
-}
-impl AppState {
-  fn persistent_state_signal(&self) -> impl Signal<Item = PersistentState> {
-    map_ref! {
-      let current_page = self.current_page.signal_cloned(),
-      let collections = self.collections.signal_cloned()
-      => {
-        PersistentState {
-          current_page: current_page.clone(),
-          collections: collections.clone(),
-        }
-      }
-    }
-  }
-}
-impl From<PersistentState> for AppState {
-  fn from(state: PersistentState) -> Self {
-    Self {
-      current_page: Mutable::new(state.current_page),
-      collections: Mutable::new(state.collections),
-    }
   }
 }
 
@@ -110,8 +96,7 @@ pub fn run() {
     ])
     .setup(|app| {
       // load the state from disk
-      let state = PersistentState::load(get_state_path(app.handle()));
-      let state = state.map_or_else(AppState::default, AppState::from);
+      let state = AppState::load(get_state_path(app.handle())).unwrap_or_default();
 
       // notify the frontend when the collections change
       spawn({
@@ -128,8 +113,10 @@ pub fn run() {
       // persist the state to disk
       spawn({
         let state_path = get_state_path(app.handle());
-        let signal = state.persistent_state_signal();
-        signal.for_each(move |state| {
+        let signal = state.watch();
+        let state = state.clone();
+        signal.for_each(move |_| {
+          let state = state.clone();
           let state_path = state_path.clone();
           state.save(state_path);
           async {}
