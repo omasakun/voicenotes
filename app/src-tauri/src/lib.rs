@@ -7,7 +7,9 @@ use futures_signals::map_ref;
 use futures_signals::signal::Mutable;
 use futures_signals::signal::Signal;
 use futures_signals::signal::SignalExt;
+use futures_signals::signal_map::MapDiff;
 use futures_signals::signal_map::MutableBTreeMap;
+use futures_signals::signal_map::SignalMapExt;
 use futures_signals::signal_vec::SignalVecExt;
 use serde::{Deserialize, Serialize};
 use tauri::AppHandle;
@@ -16,6 +18,7 @@ use tauri::{async_runtime::spawn, Manager, State};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct AudioEntry {
+  uuid: String,
   path: String,
   mtime: u64,
   size: u64,
@@ -36,7 +39,10 @@ struct AudioCollection {
 struct AppState {
   current_page: Mutable<Option<serde_json::Value>>,
   collections: Mutable<Vec<AudioCollection>>,
+
+  // collection uuid -> entries
   entries: MutableBTreeMap<String, Vec<AudioEntry>>,
+  //
   // NOTE: do not forget to add new fields to the `watch` method
 }
 
@@ -83,6 +89,11 @@ fn set_current_page(state: State<'_, AppState>, page: Option<serde_json::Value>)
   state.current_page.set(page);
 }
 
+#[tauri::command]
+fn get_entries(state: State<'_, AppState>, uuid: &str) -> Option<Vec<AudioEntry>> {
+  state.entries.lock_ref().get(uuid).cloned()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
   tauri::Builder::default()
@@ -93,7 +104,8 @@ pub fn run() {
       get_collections,
       set_collections,
       get_current_page,
-      set_current_page
+      set_current_page,
+      get_entries
     ])
     .setup(|app| {
       // load the state from disk
@@ -105,6 +117,39 @@ pub fn run() {
         let signal = state.collections.signal_cloned();
         signal.for_each(move |collections| {
           app.emit("collections", collections).unwrap();
+          async {}
+        })
+      });
+
+      // notify the frontend when the entries change
+      spawn({
+        let app = app.handle().clone();
+        let signal = state.entries.signal_map_cloned();
+        signal.for_each(move |change| {
+          match change {
+            MapDiff::Replace { entries } => {
+              app.emit("entries:reset", ()).unwrap();
+              for (key, value) in entries {
+                let key = format!("entries:update:{}", key);
+                app.emit(&key, value).unwrap();
+              }
+            }
+            MapDiff::Insert { key, value } => {
+              let key = format!("entries:update:{}", key);
+              app.emit(&key, value).unwrap();
+            }
+            MapDiff::Update { key, value } => {
+              let key = format!("entries:update:{}", key);
+              app.emit(&key, value).unwrap();
+            }
+            MapDiff::Remove { key } => {
+              let key = format!("entries:remove:{}", key);
+              app.emit(&key, ()).unwrap();
+            }
+            MapDiff::Clear {} => {
+              app.emit("entries:reset", ()).unwrap();
+            }
+          }
           async {}
         })
       });

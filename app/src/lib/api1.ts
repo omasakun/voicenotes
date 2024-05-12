@@ -5,6 +5,7 @@ import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 
 export interface AudioEntry {
+  uuid: string
   path: string
   mtime: number
   size: number
@@ -39,4 +40,22 @@ export function getCurrentPage(): Promise<CurrentPage | undefined> {
 
 export function setCurrentPage(page: CurrentPage | undefined): Promise<void> {
   return invoke('set_current_page', { page })
+}
+
+export function getEntries(uuid: string): Promise<AudioEntry[] | undefined> {
+  return invoke('get_entries', { uuid })
+}
+
+export function listenEntriesUpdate(uuid: string, callback: (entry: AudioEntry[]) => void) {
+  return listen(`entries:update:${uuid}`, (e) => {
+    callback(e.payload as AudioEntry[])
+  })
+}
+
+export function listenEntriesRemove(uuid: string, callback: () => void) {
+  return listen(`entries:remove:${uuid}`, callback)
+}
+
+export function listenEntriesReset(callback: () => void) {
+  return listen('entries:reset', callback)
 }

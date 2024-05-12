@@ -21,9 +21,16 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Progress } from '@/components/ui/progress'
 import { Resizable, ResizableHandle, ResizablePanel } from '@/components/ui/resizable'
 import { AudioCollection } from '@/lib/api1'
-import { useCollections } from '@/lib/api2'
-import { CurrentPage, currentPage, setCurrentPage } from '@/lib/context'
-import { never } from '@/lib/utils'
+import { useCollections, useEntries } from '@/lib/api2'
+import {
+  CurrentPage,
+  currentCollectionUuid,
+  currentPage,
+  setCurrentEntryUuid,
+  setCurrentPage,
+  useCurrentEntry,
+} from '@/lib/context'
+import { cn, formatDuration, formatTime, never, nullish } from '@/lib/utils'
 import { exit } from '@tauri-apps/plugin-process'
 import {
   Edit3Icon,
@@ -35,7 +42,7 @@ import {
   PlayIcon,
   PlusIcon,
 } from 'lucide-solid'
-import { For } from 'solid-js'
+import { For, Show } from 'solid-js'
 
 export function App() {
   return (
@@ -106,10 +113,7 @@ function AppMenu() {
 function CollectionDropdown() {
   const collections = useCollections()
 
-  const isSelected = (collection: AudioCollection) => {
-    const page = currentPage()
-    return page?.type === 'collection' && page.uuid === collection.uuid
-  }
+  const isSelected = (collection: AudioCollection) => currentCollectionUuid() === collection.uuid
   const pageName = (page: CurrentPage | undefined) => {
     if (!page) return ''
     switch (page.type) {
@@ -134,7 +138,10 @@ function CollectionDropdown() {
         <For each={collections()}>
           {(collection) => (
             <DropdownMenuItem
-              onSelect={() => setCurrentPage({ type: 'collection', uuid: collection.uuid })}>
+              onSelect={() => {
+                setCurrentPage({ type: 'collection', uuid: collection.uuid })
+                setCurrentEntryUuid(undefined)
+              }}>
               {isSelected(collection) ? (
                 <FolderOpenIcon class='mr-2 size-4' />
               ) : (
@@ -192,6 +199,7 @@ function WelcomePage() {
 }
 
 function FilesPane() {
+  const entries = useEntries(currentCollectionUuid)
   return (
     <div class='h-full overflow-auto'>
       {/*
@@ -200,14 +208,24 @@ function FilesPane() {
       </div>
        */}
       <ul class='[&_li:last-child]:border-0'>
-        <For each={new Array(100).fill(0)}>
-          {(_, i) => (
+        <For each={entries()}>
+          {(item) => (
             <li class='border-b'>
-              <button class='hover:bg-accent hover:text-accent-foreground w-full px-4 py-3 text-start transition-colors'>
-                <div class='mb-1 truncate font-medium'>{`File ${i() + 1}`}</div>
+              <button
+                class='hover:bg-accent hover:text-accent-foreground w-full px-4 py-3 text-start transition-colors'
+                onClick={() => setCurrentEntryUuid(item.uuid)}>
+                <div
+                  class={cn(
+                    'mb-1 truncate font-medium',
+                    nullish(item.title) ? 'animate-pulse' : '',
+                  )}>
+                  {item.title ?? 'Loading...'}
+                </div>
                 <div class='flex flex-wrap justify-between text-sm'>
-                  <div class='mr-2 text-xs font-medium tabular-nums'>{`1:00:43`}</div>
-                  <div class='text-xs font-medium tabular-nums'>{`2024-01-01 00:00`}</div>
+                  <div class='mr-2 text-xs font-medium tabular-nums'>
+                    {nullish(item.duration) ? '' : formatDuration(item.duration)}
+                  </div>
+                  <div class='text-xs font-medium tabular-nums'>{formatTime(item.mtime)}</div>
                 </div>
               </button>
             </li>
@@ -219,20 +237,36 @@ function FilesPane() {
 }
 
 function PlayerPane() {
+  const entry = useCurrentEntry()
+
+  const fallback = () => (
+    <div class='flex h-full items-center justify-center'>Select an audio file to play</div>
+  )
+
   // select-text を親要素に指定することで、余白部分からでもテキスト選択ができるようになる
   // プレイヤーコントロール部分では改めて select-none を指定している
   return (
-    <div class='h-full select-text overflow-auto'>
-      <div class='mx-auto max-w-5xl'>
-        <h2 class='m-8 truncate text-2xl font-medium'>File 1</h2>
-        <div class='m-8'>{'Contents '.repeat(1000)}</div>
-      </div>
-      <div class='sticky bottom-8 m-8'>
-        <div class='bg-background mx-auto max-w-96 select-none rounded-xl border p-2 shadow-md'>
-          <PlayerControls />
+    <Show when={entry()} fallback={fallback()}>
+      {(entry) => (
+        <div class='h-full select-text overflow-auto'>
+          <div class='mx-auto max-w-5xl'>
+            <h2
+              class={cn(
+                'm-8 truncate text-2xl font-medium',
+                nullish(entry().title) ? 'animate-pulse' : '',
+              )}>
+              {entry().title ?? 'Loading...'}
+            </h2>
+            <div class='m-8'>{'Contents '.repeat(1000)}</div>
+          </div>
+          <div class='sticky bottom-8 m-8'>
+            <div class='bg-background mx-auto max-w-96 select-none rounded-xl border p-2 shadow-md'>
+              <PlayerControls />
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </Show>
   )
 }
 
