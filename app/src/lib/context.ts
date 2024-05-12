@@ -10,7 +10,21 @@ export type CurrentPage =
       uuid: string
     }
 
-// TODO: バージョンアップなどでページの構造が変わって正しくないページ名になった場合、強制的に welcome にするべき
 export const [currentPage, setCurrentPage] = createSignal<CurrentPage>()
-getCurrentPage().then((page) => setCurrentPage(page ? JSON.parse(page) : { type: 'welcome' }))
-createEffect(() => persistCurrentPage(JSON.stringify(currentPage())))
+
+// TODO: バージョンアップなどでページの構造が変わって正しくないページ名になった場合、強制的に welcome にするべき
+getCurrentPage().then((page) => {
+  if (currentPage()) return // すでに設定済みの場合は何もしない
+  setCurrentPage(page ? page : { type: 'welcome' })
+})
+
+// 1秒経ってもページが設定されない場合は welcome にする
+// TODO: ちゃんとしたエラーハンドリングとかすべきだと思う
+setTimeout(() => {
+  if (!currentPage()) setCurrentPage({ type: 'welcome' })
+}, 1000)
+
+createEffect(() => {
+  const page = currentPage()
+  if (page) persistCurrentPage(page)
+})

@@ -31,7 +31,7 @@ struct AudioCollection {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct PersistentState {
-  current_page: Option<String>,
+  current_page: Option<serde_json::Value>,
   collections: Vec<AudioCollection>,
 }
 impl PersistentState {
@@ -47,7 +47,7 @@ impl PersistentState {
 
 #[derive(Debug, Default)]
 struct AppState {
-  current_page: Mutable<Option<String>>,
+  current_page: Mutable<Option<serde_json::Value>>,
   collections: Mutable<Vec<AudioCollection>>,
 }
 impl AppState {
@@ -88,12 +88,12 @@ fn set_collections(state: State<'_, AppState>, collections: Vec<AudioCollection>
 }
 
 #[tauri::command]
-fn get_current_page(state: State<'_, AppState>) -> Option<String> {
+fn get_current_page(state: State<'_, AppState>) -> Option<serde_json::Value> {
   state.current_page.get_cloned()
 }
 
 #[tauri::command]
-fn set_current_page(state: State<'_, AppState>, page: Option<String>) {
+fn set_current_page(state: State<'_, AppState>, page: Option<serde_json::Value>) {
   state.current_page.set(page);
 }
 

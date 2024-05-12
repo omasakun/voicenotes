@@ -48,6 +48,7 @@ export function App() {
 
 function mainContainer() {
   const page = currentPage()
+  if (!page) return null
   switch (page.type) {
     case 'welcome':
       return <WelcomePage />
@@ -106,9 +107,10 @@ function CollectionDropdown() {
 
   const isSelected = (collection: AudioCollection) => {
     const page = currentPage()
-    return page.type === 'collection' && page.uuid === collection.uuid
+    return page?.type === 'collection' && page.uuid === collection.uuid
   }
-  const pageName = (page: CurrentPage) => {
+  const pageName = (page: CurrentPage | undefined) => {
+    if (!page) return ''
     switch (page.type) {
       case 'welcome':
         return 'Welcome Page'

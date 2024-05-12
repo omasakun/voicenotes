@@ -1,5 +1,6 @@
 // API に対する一対一の型付きマッピングたち
 
+import { CurrentPage } from '@/lib/context'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 
@@ -32,10 +33,10 @@ export function listenCollections(callback: (collections: AudioCollection[]) => 
   })
 }
 
-export function getCurrentPage(): Promise<string | undefined> {
+export function getCurrentPage(): Promise<CurrentPage | undefined> {
   return invoke('get_current_page')
 }
 
-export function setCurrentPage(page: string | undefined): Promise<void> {
+export function setCurrentPage(page: CurrentPage | undefined): Promise<void> {
   return invoke('set_current_page', { page })
 }
