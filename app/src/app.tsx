@@ -31,6 +31,7 @@ import {
   useCurrentEntry,
 } from '@/lib/context'
 import { cn, formatDuration, formatTime, never, nullish } from '@/lib/utils'
+import { getVersion } from '@tauri-apps/api/app'
 import { exit } from '@tauri-apps/plugin-process'
 import {
   Edit3Icon,
@@ -42,7 +43,7 @@ import {
   PlayIcon,
   PlusIcon,
 } from 'lucide-solid'
-import { For, Show } from 'solid-js'
+import { For, Show, createResource } from 'solid-js'
 
 export function App() {
   return (
@@ -90,6 +91,7 @@ function Header() {
 }
 
 function AppMenu() {
+  const [version] = createResource(() => getVersion())
   return (
     <DropdownMenu placement='bottom-start' gutter={8}>
       <DropdownMenuTrigger
@@ -101,10 +103,12 @@ function AppMenu() {
         <DropdownMenuItem onSelect={() => setCurrentPage({ type: 'welcome' })}>
           Welcome
         </DropdownMenuItem>
-        <DropdownMenuItem>Commands</DropdownMenuItem>
+        {/* <DropdownMenuItem>Commands</DropdownMenuItem> */}
         <DropdownMenuItem onSelect={() => exit()}>Quit</DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuLabel class='text-xs'>Version: 0.0.0</DropdownMenuLabel>
+        <DropdownMenuLabel class='text-xs'>
+          Version: {version.loading ? '...' : version() ?? 'unknown'}
+        </DropdownMenuLabel>
       </DropdownMenuContent>
     </DropdownMenu>
   )
