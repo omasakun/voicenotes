@@ -4,6 +4,9 @@ import { CurrentPage } from '@/lib/context'
 import { invoke } from '@tauri-apps/api/core'
 import { listen } from '@tauri-apps/api/event'
 
+// const invoke: typeof _invoke = (...args) => _invoke(...inspect(args, 'invoke'))
+// const listen: typeof _listen = (...args) => _listen(...inspect(args, 'listen'))
+
 export interface AudioEntry {
   uuid: string
   path: string

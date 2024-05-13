@@ -40,3 +40,10 @@ export function formatTime(time: number) {
 export function nullish<T>(value: T | null | undefined): value is null | undefined {
   return value === null || value === undefined
 }
+
+export function inspect<T>(value: T, label?: any): T {
+  if (label) console.log(label, value)
+  else console.log(value)
+
+  return value
+}

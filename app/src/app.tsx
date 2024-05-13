@@ -20,15 +20,16 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Progress } from '@/components/ui/progress'
 import { Resizable, ResizableHandle, ResizablePanel } from '@/components/ui/resizable'
-import { AudioCollection } from '@/lib/api1'
-import { useCollections, useEntries } from '@/lib/api2'
+import { useCollections } from '@/lib/api2'
 import {
   CurrentPage,
-  currentCollectionUuid,
   currentPage,
   setCurrentEntryUuid,
   setCurrentPage,
+  useCurrentCollectionUuid,
+  useCurrentEntries,
   useCurrentEntry,
+  useCurrentPageType,
 } from '@/lib/context'
 import { cn, formatDuration, formatTime, never, nullish } from '@/lib/utils'
 import { getVersion } from '@tauri-apps/api/app'
@@ -43,22 +44,23 @@ import {
   PlayIcon,
   PlusIcon,
 } from 'lucide-solid'
-import { For, Show, createResource } from 'solid-js'
+import { For, Show, createMemo, createResource, createSelector } from 'solid-js'
 
 export function App() {
+  const pageType = useCurrentPageType()
   return (
     <div class='flex h-screen flex-col'>
       <Header />
-      {mainContainer()}
+      {mainContainer(pageType())}
       <Dialogs />
     </div>
   )
 }
 
-function mainContainer() {
-  const page = currentPage()
-  if (!page) return null
-  switch (page.type) {
+function mainContainer(pageType: CurrentPage['type'] | undefined) {
+  switch (pageType) {
+    case undefined:
+      return null
     case 'welcome':
       return <WelcomePage />
     case 'collection':
@@ -74,7 +76,7 @@ function mainContainer() {
         </Resizable>
       )
     default:
-      never(page)
+      never(pageType)
   }
 }
 
@@ -117,14 +119,19 @@ function AppMenu() {
 function CollectionDropdown() {
   const collections = useCollections()
 
-  const isSelected = (collection: AudioCollection) => currentCollectionUuid() === collection.uuid
-  const pageName = (page: CurrentPage | undefined) => {
-    if (!page) return ''
-    switch (page.type) {
+  const currentUuid = useCurrentCollectionUuid()
+  const currentCollection = createMemo(() => collections().find((c) => c.uuid === currentUuid()))
+  const isSelected = createSelector(currentUuid)
+
+  const currentPageName = () => {
+    const page = currentPage()
+    switch (page?.type) {
+      case undefined:
+        return ''
       case 'welcome':
         return 'Welcome'
       case 'collection':
-        return collections().find((c) => c.uuid === page.uuid)?.name ?? 'Collection'
+        return currentCollection()?.name ?? 'Collection'
       default:
         never(page)
     }
@@ -136,7 +143,7 @@ function CollectionDropdown() {
         as={(props) => (
           <Button variant='ghost' class='flex min-w-24 justify-start px-2' {...props} />
         )}>
-        {pageName(currentPage())}
+        {currentPageName()}
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         <For each={collections()}>
@@ -146,11 +153,12 @@ function CollectionDropdown() {
                 setCurrentPage({ type: 'collection', uuid: collection.uuid })
                 setCurrentEntryUuid(undefined)
               }}>
-              {isSelected(collection) ? (
+              <Show when={isSelected(collection.uuid)}>
                 <FolderOpenIcon class='mr-2 size-4' />
-              ) : (
+              </Show>
+              <Show when={!isSelected(collection.uuid)}>
                 <FolderIcon class='mr-2 size-4' />
-              )}
+              </Show>
               <div>{collection.name}</div>
             </DropdownMenuItem>
           )}
@@ -203,7 +211,8 @@ function WelcomePage() {
 }
 
 function FilesPane() {
-  const entries = useEntries(currentCollectionUuid)
+  const entries = useCurrentEntries()
+
   return (
     <div class='h-full overflow-auto'>
       {/*

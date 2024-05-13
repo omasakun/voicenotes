@@ -1,5 +1,6 @@
 import { internalIpV4 } from 'internal-ip'
 import path from 'node:path'
+import devtools from 'solid-devtools/vite'
 import { defineConfig } from 'vite'
 import solid from 'vite-plugin-solid'
 
@@ -8,7 +9,7 @@ const mobile = !!/android|ios/.exec(process.env.TAURI_ENV_PLATFORM)
 
 // https://vitejs.dev/config/
 export default defineConfig(async () => ({
-  plugins: [solid()],
+  plugins: [devtools({ autoname: true }), solid()],
 
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
