@@ -20,6 +20,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Progress } from '@/components/ui/progress'
 import { Resizable, ResizableHandle, ResizablePanel } from '@/components/ui/resizable'
+import { runScan } from '@/lib/api1'
 import { useCollections } from '@/lib/api2'
 import {
   CurrentPage,
@@ -105,6 +106,8 @@ function AppMenu() {
         <DropdownMenuItem onSelect={() => setCurrentPage({ type: 'welcome' })}>
           Welcome
         </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => runScan(false)}>Scan</DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => runScan(true)}>Force Scan</DropdownMenuItem>
         {/* <DropdownMenuItem>Commands</DropdownMenuItem> */}
         <DropdownMenuItem onSelect={() => exit()}>Quit</DropdownMenuItem>
         <DropdownMenuSeparator />
@@ -238,7 +241,9 @@ function FilesPane() {
                   <div class='mr-2 text-xs font-medium tabular-nums'>
                     {nullish(item.duration) ? '' : formatDuration(item.duration)}
                   </div>
-                  <div class='text-xs font-medium tabular-nums'>{formatTime(item.mtime)}</div>
+                  <div class='text-xs font-medium tabular-nums'>
+                    {formatTime(new Date(item.mtime))}
+                  </div>
                 </div>
               </button>
             </li>

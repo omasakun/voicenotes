@@ -10,7 +10,7 @@ import { listen } from '@tauri-apps/api/event'
 export interface AudioEntry {
   uuid: string
   path: string
-  mtime: number
+  mtime: string
   size: number
   title?: string
   duration?: number
@@ -20,6 +20,7 @@ export interface AudioEntry {
 export interface AudioCollection {
   uuid: string
   name: string
+  path: string
   globs: string[]
 }
 
@@ -61,4 +62,16 @@ export function listenEntriesRemove(uuid: string, callback: () => void) {
 
 export function listenEntriesReset(callback: () => void) {
   return listen('entries:reset', callback)
+}
+
+export function runScan(force: boolean) {
+  return invoke('run_scan', { force })
+}
+
+export function startScan(): Promise<void> {
+  return invoke('start_scan')
+}
+
+export function stopScan(): Promise<void> {
+  return invoke('stop_scan')
 }

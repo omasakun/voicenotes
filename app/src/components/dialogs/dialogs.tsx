@@ -32,7 +32,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { getCollections, setCollections } from '@/lib/api1'
 import { setCurrentPage } from '@/lib/context'
 import { Dialog as DialogPrimitive } from '@kobalte/core'
-import { path } from '@tauri-apps/api'
 import { open as openFileDialog } from '@tauri-apps/plugin-dialog'
 
 const DialogContext = createContext({ remove: () => {} })
@@ -136,8 +135,7 @@ function CreateCollectionDialog() {
               void run(async () => {
                 const collections = await getCollections()
                 const uuid = randomUUID()
-                const glob = await path.join(folder, '**', '*')
-                collections.push({ uuid, name, globs: [glob] })
+                collections.push({ uuid, name, path: folder, globs: ['**/*'] })
                 await setCollections(collections)
                 setCurrentPage({ type: 'collection', uuid })
                 setOpen(false)

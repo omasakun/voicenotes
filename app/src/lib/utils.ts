@@ -31,9 +31,9 @@ export function formatDuration(duration: number) {
   return `${minutes}:${String(seconds).padStart(2, '0')}`
 }
 
-export function formatTime(time: number) {
+export function formatTime(time: Date) {
   // 2022-01-01 00:00
-  const iso = new Date(time).toISOString()
+  const iso = time.toISOString()
   return iso.slice(0, 16).replace('T', ' ')
 }
 
